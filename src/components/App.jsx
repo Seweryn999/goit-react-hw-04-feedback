@@ -8,7 +8,6 @@ import Notification from './notification/notification';
 import PropTypes from 'prop-types';
 
 export const App = ({ names }) => {
-  const STATE_NAMES = [...names];
   const [good, setGood] = useState(0);
   const [neutral, setNeutral] = useState(0);
   const [bad, setBad] = useState(0);
@@ -24,34 +23,41 @@ export const App = ({ names }) => {
   };
 
   const btnHandle = e => {
-    console.log(e.target);
-    if (e.target.id === 'good') {
-      setGood(good + 1);
-    } else if (e.target.id === 'neutral') {
-      setNeutral(neutral + 1);
-    } else {
-      setBad(bad + 1);
+    const { id } = e.target;
+    if (id === 'good') {
+      setGood(prev => prev + 1);
+    } else if (id === 'neutral') {
+      setNeutral(prev => prev + 1);
+    } else if (id === 'bad') {
+      setBad(prev => prev + 1);
     }
   };
 
-  const countTotalFeedback = () => bad + neutral + good;
+  const countTotalFeedback = () => good + neutral + bad;
 
-  const countPositiveFeedbackPercentage = () =>
-    ((good / countTotalFeedback()) * 100).toFixed(2);
+  const countPositiveFeedbackPercentage = () => {
+    const total = countTotalFeedback();
+    return total > 0 ? ((good / total) * 100).toFixed(2) : '0.00';
+  };
 
   return (
     <>
       <Section
         title="Please leave feedback"
-        render={STATE_NAMES.map(feedback => (
-          <FeedbackButton name={feedback} key={feedback} func={btnHandle} />
+        render={names.map(feedback => (
+          <FeedbackButton
+            name={feedback}
+            id={feedback}
+            func={btnHandle}
+            key={feedback}
+          />
         ))}
       />
 
       {good > 0 || neutral > 0 || bad > 0 ? (
         <Section
           title="Statistics"
-          render={STATE_NAMES.map(n => (
+          render={names.map(n => (
             <FeedbackItemRender
               objkey={n}
               value={stateNameToValueForRender(n)}
@@ -61,7 +67,7 @@ export const App = ({ names }) => {
           reactComp={
             <div>
               <FuncItemRender
-                title="total"
+                title="Total"
                 func={countTotalFeedback()}
                 key={nanoid()}
               />
